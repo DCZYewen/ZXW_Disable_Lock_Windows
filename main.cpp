@@ -113,12 +113,42 @@ BOOL CALLBACK EnumChildProc(HWND hWnd,LPARAM lParam){
 	}
 }
 
+void AutoHideTaskBar(BOOL bHide){
+      #ifndef   ABM_SETSTATE 
+      #define   ABM_SETSTATE             0x0000000a 
+      #endif
+
+       LPARAM lParam;
+       if(bHide == true)
+       {
+              lParam = ABS_AUTOHIDE;//自动隐藏
+       }
+       else
+       {
+              lParam = ABS_ALWAYSONTOP;//取消自动隐藏
+       }
+
+       APPBARDATA  apBar; 
+       memset(&apBar,0,sizeof(apBar)); 
+       apBar.cbSize  =  sizeof(apBar); 
+       apBar.hWnd  =  FindWindow("Shell_TrayWnd", NULL);
+       if(apBar.hWnd  !=  NULL) 
+       { 
+              apBar.lParam   =   lParam; 
+              SHAppBarMessage(ABM_SETSTATE,&apBar);  //设置任务栏自动隐藏
+       }  
+}
+
 int main(int argc, char* argv[])
 {
 	HWND task;
 	task=FindWindow("Shell_TrayWnd",NULL);
-	printf("恢复了任务栏. \n");
+	AutoHideTaskBar(true);//then
+    AutoHideTaskBar(false);//
+	ShowWindow(task,SW_HIDE);//隐藏
 	ShowWindow(task,SW_SHOW);//显示
+	::SetWindowPos(task,0,0,0,0,0,SWP_SHOWWINDOW);
+	printf("恢复了任务栏. \n");
 	
 	DWORD pid = GetProcessIDByName("ZXWXStudentClient.exe");
 	if (pid != NULL){
