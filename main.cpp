@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <stdlib.h>
+#include <io.h> 
 
 struct handle_data {
 	unsigned long process_id;
@@ -97,7 +98,7 @@ BOOL checkIsMainWindow(HWND hWndToBeCompared){
 	}
 }
 
-//枚举子窗口句柄 抄来的
+//枚举子窗口句柄  如果x学网校存在且创建了第二个窗口  做了他
 BOOL CALLBACK EnumChildProc(HWND hWnd,LPARAM lParam){
     return true;
 	char WindowText[512];
@@ -139,34 +140,126 @@ void AutoHideTaskBar(BOOL bHide){
        }  
 }
 
+int ArchDetectWindows(){
+	char ProgramFilePath[] = "C:\\Program Files (x86)";
+	if (_access(ProgramFilePath,0) != -1){
+		return 86;
+	}else{
+		return 64;
+	}
+}
+
+int KillSabeeZXW(void){
+	DWORD pid = GetProcessIDByName("ZXWXStudentClient.exe");//No need for error passby
+	if (pid != NULL){
+		HANDLE zxwHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);//获取进程句柄
+		TerminateProcess(zxwHandle, pid);
+		CloseHandle(zxwHandle);//关闭句柄
+		return true;
+	}else{
+		return false;
+	}
+}
+
+BOOL checkZXWinstallation(void){
+	FILE *stream1, *stream2;
+	stream1 = fopen("C:\\Program Files (x86)\\ZXWXStudentClient\\vcruntime140.dll","r");
+	stream2 = fopen("C:\\Program Files (x86)\\ZXWXStudentClient\\vcruntime140.dll","r");
+	if (stream1 != NULL){
+		fclose(stream1);
+		return true;
+	}else if(stream2 != NULL){
+		fclose(stream2);
+		return true;
+	}else{
+		return false;
+	}
+}
+
 int main(int argc, char* argv[])
 {
-	HWND task;
-	task=FindWindow("Shell_TrayWnd",NULL);
-	AutoHideTaskBar(true);//then
-    AutoHideTaskBar(false);//
-	ShowWindow(task,SW_HIDE);//隐藏
-	ShowWindow(task,SW_SHOW);//显示
-	::SetWindowPos(task,0,0,0,0,0,SWP_SHOWWINDOW);
-	printf("恢复了任务栏. \n");
+	for (int i = 0 ; i < 4 ; i++){
+		printf("加载中，%d秒\n",i + 1);
+		Sleep(1000);
+	}
+	int MBResult = MessageBox(
+		NULL,
+		"如果您想要永久去除弹窗，请选是，如果已经被锁屏，想要正常化x学网窗口，找回任务栏请选否，退出请取消。。",
+		"ZXW_Disable_Winlock_Deamon",
+		MB_YESNOCANCEL);
 	
-	DWORD pid = GetProcessIDByName("ZXWXStudentClient.exe");
-	if (pid != NULL){
-		HWND mainWindowsHandle = FindMainWindow(pid);
-		printf("主窗口句柄%d \n", mainWindowsHandle);
-		ShowWindow(mainWindowsHandle,SW_RESTORE);
-		printf("正常化滞学网窗口.\n");
-		EnumChildWindows(NULL,EnumChildProc,0);
-		MessageBox(NULL,"专杀工具完成！!","即将退出程序！",MB_OK);
-		exit(EXIT_SUCCESS);
-	}else{
-		printf("获取进程异常！是否未开启智学网校？\n");
-		MessageBox(NULL,"Fatal Error!","Terminating!",MB_OK);
-		exit(EXIT_SUCCESS);
+	switch (MBResult){
+		case IDYES:{
+		//do sth
+			if (checkZXWinstallation == false){
+				MessageBox(NULL,"未检测到x学网安装！","ZXW_Disable_Winlock_Deamon",MB_OK);
+				exit(EXIT_SUCCESS);
+			}
+			if(KillSabeeZXW() == true){
+				printf("检测掉智学网开启，程序会结束其进程后将其拉起");
+				if (ArchDetectWindows() == 64){
+					MoveFile("C:\\Program Files\\ZXWXStudentClient\\WinLock.dll","C:\\Program Files\\ZXWXStudentClient\\WinLock.dll.bak");
+					//拉起x学网
+					WinExec("C:\\Program Files\\ZXWXStudentClient\\ZXWXStudentClient.exe", SW_RESTORE);
+				}else{
+					MoveFile("C:\\Program Files (x86)\\ZXWXStudentClient\\WinLock.dll","C:\\Program Files (x86)\\ZXWXStudentClient\\WinLock.dll");
+					//拉起x学网
+					WinExec("C:\\Program Files (x86)\\ZXWXStudentClient\\ZXWXStudentClient.exe", SW_RESTORE);
+				}//解除锁屏弹窗
+				MessageBox(NULL,"已经永久去除弹窗，如果想要恢复，请将x学网安装目录下的WinLock.dll.bak重命名为WinLock.dll。","ZXW_Disable_Winlock_Deamon",MB_OK);
+			}else{
+				printf("未找到x学网进程，即将拉起\n");
+				if (ArchDetectWindows() == 64){
+					MoveFile("C:\\Program Files\\ZXWXStudentClient\\WinLock.dll","C:\\Program Files\\ZXWXStudentClient\\WinLock.dll.bak");
+					//拉起x学网
+					WinExec("C:\\Program Files\\ZXWXStudentClient\\ZXWXStudentClient.exe", SW_RESTORE);
+					printf("asav");
+				}else{
+					MoveFile("C:\\Program Files (x86)\\ZXWXStudentClient\\WinLock.dll","C:\\Program Files (x86)\\ZXWXStudentClient\\WinLock.dll");
+					//拉起x学网
+					WinExec("C:\\Program Files (x86)\\ZXWXStudentClient\\ZXWXStudentClient.exe", SW_RESTORE);
+					printf("avav");
+				}//解除锁屏弹窗
+			}
+			printf("已经做掉弹窗了");
+			break;
+		}
+		case IDNO:{
+		//do sth
+			DWORD pid = GetProcessIDByName("ZXWXStudentClient.exe");
+			if (pid != NULL){
+				HWND mainWindowsHandle = FindMainWindow(pid);
+				printf("主窗口句柄%d \n", mainWindowsHandle);
+				ShowWindow(mainWindowsHandle,SW_RESTORE);
+				printf("正常化滞学网窗口.\n");
+					
+				HWND task;
+				task=FindWindow("Shell_TrayWnd",NULL);
+				AutoHideTaskBar(true);//then
+				AutoHideTaskBar(false);//
+				ShowWindow(task,SW_HIDE);//隐藏
+				ShowWindow(task,SW_SHOW);//显示
+				SetWindowPos(task,0,0,0,0,0,SWP_SHOWWINDOW);
+				printf("恢复了任务栏. \n");
+				
+				
+				EnumChildWindows(NULL,EnumChildProc,0);
+				MessageBox(NULL,"专杀工具完成！!","即将退出程序！",MB_OK);
+				
+				exit(EXIT_SUCCESS);
+			}else{
+				printf("获取进程异常！是否未开启x学网校？\n");
+				MessageBox(NULL,"Fatal Error!","Terminating!",MB_OK);
+				exit(EXIT_SUCCESS);
+			}
+			break;
+		}
+		case IDCANCEL:{
+			exit(EXIT_SUCCESS);
+			break;
+		}
 	}
 
-	//弃用方法  改用枚举
-	//HWND LockWindowHandle = FindWindowExA(HWND   mainWindowsHandle, HWND   NULL, LPCSTR lpszClass, LPCSTR NULL);
 	
 	
 	exit(EXIT_SUCCESS);
