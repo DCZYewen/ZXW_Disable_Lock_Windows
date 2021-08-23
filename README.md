@@ -10,7 +10,7 @@
 
 ## 编译方法
 
-在`http://www.mingw.org/`下载Mingw，将`%Mingw%\bin`加入path后，运行指令`g++ .\main.cpp -fexec-charset=gbk -O ZXW_Disable_Lock_Windows.exe`编译程序。正常情况下，应该可以得到`ZXW_Disable_Lock_Windows.exe`的x86可执行程序。对于Windows10 For ARM，请在X86下对应地交叉编译。
+在`http://www.mingw.org/`下载Mingw，将`%Mingw%\bin`加入path后，运行指令`g++ .\main.cpp -fexec-charset=gbk -o ZXW_Disable_Lock_Windows.exe`编译程序。正常情况下，应该可以得到`ZXW_Disable_Lock_Windows.exe`的x86可执行程序。对于Windows10 For ARM，请在X86下对应地交叉编译。
 
 ## 运行方法
 
